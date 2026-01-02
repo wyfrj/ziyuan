@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>帖子详情 - 个人资源小站</title>
+    
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="libs/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="libs/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="css/newCss.css">
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin-top: 20px;
+        }
+        
+        .post-detail {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.1);
+        }
+        
+        .post-title {
+            color: #2c3e50;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .post-content {
+            color: #555;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        
+        .post-meta {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+        
+        .post-category {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-right: 10px;
+        }
+        
+        .post-tag {
+            display: inline-block;
+            background-color: #e0e0e0;
+            color: #555;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .back-btn {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white">
+        <div class="container-fluid">
+                <a class="navbar-brand" href="personal_resource.html">
+                    个人资源小站
+                </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="personal_resource.html">首页</a>
+                    </li>
+                </ul>
+                
+                <!-- 右上角管理员登录按钮 -->
+                    <button id="adminLoginBtn" class="btn btn-admin" style="display: none;">
+                        管理员登录
+                    </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <main class="container">
+        <div class="post-detail">
+            <div class="post-meta">
+                <span id="postCategory" class="post-category"></span>
+                <span id="postCreatedAt"></span>
+            </div>
+            <h1 id="postTitle" class="post-title"></h1>
+            <div id="postTags"></div>
+            <div id="postContent" class="post-content"></div>
+            
+                <a href="personal_resource.html" class="btn btn-primary back-btn">
+                    返回列表
+                </a>
+        </div>
+    </main>
+
+    <!-- JavaScript 库 -->
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <script src="libs/bootstrap/js/bootstrap.min.js"></script>
+    
+    <!-- 自定义脚本 -->
+    <script>
+        $(document).ready(function() {
+            // 从URL获取帖子ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const postId = urlParams.get('post_id');
+            
+            // 加载帖子详情
+            if (postId) {
+                loadPostDetail(postId);
+            } else {
+                // 如果没有帖子ID，显示错误信息
+                $('#postTitle').text('帖子不存在');
+                $('#postContent').html('<div class="alert alert-danger">无法加载帖子内容，请返回列表页重试。</div>');
+            }
+            
+            // 检查是否已登录
+            if (localStorage.getItem('adminLoggedIn') === 'true') {
+                $('#adminLoginBtn').show();
+            }
+            
+            // 管理员登录按钮点击事件
+            $('#adminLoginBtn').click(function() {
+                window.location.href = 'personal_resource.html';
+            });
+        });
+        
+        // 加载帖子详情
+        function loadPostDetail(postId) {
+            const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+            const post = posts.find(p => p.id === postId);
+            
+            if (post) {
+                // 显示帖子内容
+                $('#postTitle').text(post.title);
+                // 将URL转换为链接
+                const processedContent = post.content.replace(/\n/g, '<br>')
+                    .replace(
+                        /(https?:\/\/[^\s]+)/g,
+                        '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-primary">$1</a>'
+                    );
+                $('#postContent').html(processedContent);
+                $('#postCategory').text(post.category);
+                $('#postCreatedAt').text('创建时间: ' + post.createdAt);
+                
+                // 显示标签
+                const tagsHtml = post.tags.map(tag => 
+                    `<span class="post-tag">${tag}</span>`
+                ).join('');
+                $('#postTags').html(tagsHtml);
+            } else {
+                // 帖子不存在
+                $('#postTitle').text('帖子不存在');
+                $('#postContent').html('<div class="alert alert-danger">该帖子已被删除或不存在。</div>');
+            }
+        }
+    </script>
+</body>
+</html>
